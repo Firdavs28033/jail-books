@@ -15,6 +15,8 @@ async function createWindow() {
   const win = new BrowserWindow({
     width: 1500,
     height: 850,
+    //frame: false,
+    icon: './assets/64x64.png',
     webPreferences: {
       
       // Use pluginOptions.nodeIntegration, leave this alone
