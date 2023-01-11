@@ -6,85 +6,38 @@
                     <h2>| Осужденные</h2>
                     <h4>наименование учреждения</h4>
                 </div>
-                <v-btn
-                dark
-                color="#0B465A"
-                small
-                >
-                + добавить осужденного
-                </v-btn>
+                
+                <add-prisoner></add-prisoner>
             </div>
 
-            <div class="prisoners__table">
-                <v-simple-table>
-                    <template v-slot:default>
-                    <thead>
-                        <tr>
-                        <th class="text-left">
-                            Ф.И.О.
-                        </th>
-                        <th class="text-left">
-                            Срок прибывания в учреждении
-                        </th>
-                        <th class="text-left">
-                            Количество прочитанных книг
-                        </th>
-                        <th class="text-left">
-                            Действие
-                        </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr
-                        v-for="item in prisoners"
-                        :key="item.name"
-                        >
-                        <td>{{ item.fullname }}</td>
-                        <td><b>с</b> {{ item.term.since }}<br><b>до</b> {{ item.term.to }}</td>
-                        <td>{{ item.booksCount }}</td>
-                        <td>
-                            <v-btn
-                            class="jails__action"
-                            dark
-                            color="#0B465A"
-                            small
-                            @click="goToProfile"
-                            >
-                                <v-icon
-                                    size="22"
-                                    color="white"
-                                    >
-                                    mdi-eye-arrow-right
-                                    </v-icon>
-                                </v-btn>
-                        </td>
-                        </tr>
-                    </tbody>
-                    </template>
-                </v-simple-table>
-            </div>
+            <prisoners-table :prisonersList="prisoners"></prisoners-table>
         </div>
     </div>
 </template>
 
 <script>
+import PrisonersTable from '@/components/PrisonersTable.vue';
+import AddPrisoner from '@/components/AddPrisoner.vue';
+
 export default {
-    methods:{
-        goToProfile: function (){
-            this.$router.push('/profile')
-        }
-    },
     data () {
       return {
         prisoners: [
           {
             fullname: 'Ержинков Анатолий Степанович',
+            born: '03.09.1976',
+            criminal: 'ч.2 ст. 97 УП РУз.',
             term: { since: '12.06.2010', to:'25.08.2025'},
+            jail: 'Зангиатинская колония общего режима',
             booksCount: 34
           },
         ],
       }
     },
+    components:{
+        PrisonersTable,
+        AddPrisoner
+    }
 }
 </script>
 

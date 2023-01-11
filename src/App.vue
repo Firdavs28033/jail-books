@@ -16,7 +16,7 @@
           width="55"
         />
 
-        <h4 class="header__title">Система учёта прочитанных книг осужденными, отбывающими наказание в учреждениях по исполнению наказания</h4>
+        <h4 class="header__title">Система учёта прочитанных книг осужденными, отбывающих наказание в учреждениях по исполнению наказания</h4>
       </div>
 
       <v-spacer></v-spacer>
@@ -37,7 +37,7 @@
       <v-spacer></v-spacer>
 
       <v-menu offset-y
-       dark
+       max-width="120"
        >
         <template v-slot:activator="{ on, attrs }">
           <v-btn
@@ -59,7 +59,13 @@
           </v-btn>
         </template>
         <v-list>
-          <v-btn class="header__btn" small><span style="color:red">Выйти</span></v-btn>
+          <v-btn
+          class="header__btn" 
+          small color="#03212C" 
+          dark
+          >
+            <span style="color:red">Выйти</span>
+          </v-btn>
         </v-list>
       </v-menu>
     </v-app-bar>
@@ -105,5 +111,23 @@ export default {
 }
 .v-menu__content{
   width: 200px;
+}
+.v-card__actions {
+    flex-direction: column;
+}
+
+.input{
+  width: 	100%;
+  height: 35px;
+  text-indent: 10px;
+  border: 1px solid rgb(214, 214, 214);
+  border-radius: 5px;
+}
+.input:not(:last-child){
+  margin-bottom: 25px;
+}
+.input:focus{
+  outline: none;
+    box-shadow: 0px 0px 5px 5px #0b465a42;
 }
 </style>
