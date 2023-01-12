@@ -4,13 +4,13 @@
             <div class="prisoners__header">
                 <div class="prisoners__titles">
                     <h2>| Осужденные</h2>
-                    <h4>наименование учреждения</h4>
+                    <h4>{{ jailName }}</h4>
                 </div>
                 
                 <add-prisoner></add-prisoner>
             </div>
 
-            <prisoners-table :prisonersList="prisoners"></prisoners-table>
+            <prisoners-table :jail="currentJail" :name="jailName"></prisoners-table>
         </div>
     </div>
 </template>
@@ -22,17 +22,26 @@ import AddPrisoner from '@/components/AddPrisoner.vue';
 export default {
     data () {
       return {
-        prisoners: [
-          {
-            fullname: 'Ержинков Анатолий Степанович',
-            born: '03.09.1976',
-            criminal: 'ч.2 ст. 97 УП РУз.',
-            term: { since: '12.06.2010', to:'25.08.2025'},
-            jail: 'Зангиатинская колония общего режима',
-            booksCount: 34
-          },
-        ],
+        currentJail: '',
+        jailName: ''
       }
+    },
+    mounted() {
+        let urlParams = window
+        .location
+        .search
+        .replace('?','')
+        .split('&')
+        .reduce(
+            function(p,e){
+                var a = e.split('=');
+                p[ decodeURIComponent(a[0])] = decodeURIComponent(a[1]);
+                return p;
+            },
+            {}
+        )
+        this.currentJail = urlParams.id
+        this.jailName = urlParams.name
     },
     components:{
         PrisonersTable,

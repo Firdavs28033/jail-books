@@ -4,36 +4,23 @@
             <div class="jails__header">
                 <h2>| Учреждения</h2>
 
-                <add-jail></add-jail>
+                <add-jail v-if="user.permissions[0].level=='*'"></add-jail>
             </div>
 
-            <jails-table :jailsList="jails"></jails-table>
+            <jails-table></jails-table>
 
         </div>
     </div>
 </template>
 
 <script>
-import JailsTable from '@/components/JailsTable.vue';
-import AddJail from '@/components/AddJail.vue';
+import JailsTable from '@/components/JailsTable.vue'
+import AddJail from '@/components/AddJail.vue'
 
 export default {
     data () {
       return {
-        jails: [
-          {
-            name: 'Зангиатинская колония общего режима',
-            amount: 159,
-            action: true,
-            perm:true
-          },
-          {
-            name: 'Джиззакская колония общего режима',
-            amount: 159,
-            action: false,
-            perm:false
-          },
-        ]
+        user: JSON.parse(localStorage.getItem('user'))
       }
     },
     components:{

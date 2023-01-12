@@ -22,7 +22,7 @@
             </v-card-title>
 
             <div class="dialog-content">
-                <h4 class="mb-2">{{ oldName }}</h4>
+                <h4 class="mb-2">{{ oldName }} → {{ jailName }}</h4>
                 <input class="input" type="text" placeholder="Новое наименование" v-model="jailName">
             </div>
 

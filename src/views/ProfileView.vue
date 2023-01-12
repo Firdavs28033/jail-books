@@ -1,7 +1,7 @@
 <template>
     <div class="wrapper">
         <div class="container">
-            <div class="profile__bio">
+            <div class="profile__bio" v-if="showBio">
                 <div class="profile__bio-media">
                     <v-img
                     contain
@@ -10,6 +10,7 @@
                     width="200"
                     ></v-img>
                 </div>
+
                 <div class="profile__bio-content">
                     <table>
                         <tr>
@@ -22,11 +23,11 @@
                         </tr>
                         <tr>
                             <td><b>Учреждение</b></td>
-                            <td>{{ profile.jail.name }}</td>
+                            <td>{{ jailName }}</td>
                         </tr>
                         <tr>
                             <td><b>Количество прочитанных книг</b></td>
-                            <td>{{ readBooksCount }}</td>
+                            <td>0</td>
                         </tr>
                     </table>
                 </div>
@@ -44,65 +45,62 @@
                 </div>
             </div>
 
-            <profile-books-table :booksList="profile.books"></profile-books-table>
+            <div class="prisoners-progress" v-if="showProgress">
+                    <v-progress-circular
+                    :width="3"
+                    :size="80"
+                    color="#0B465A"
+                    indeterminate
+                    ></v-progress-circular>
+                </div>
+
+            <profile-books-table v-if="showTable" :profile="profile.id"></profile-books-table>
 
         </div>
     </div>
 </template>
 
 <script>
-import ProfileBooksTable from '@/components/ProfileBooksTable.vue';
+import ProfileBooksTable from '@/components/ProfileBooksTable.vue'
+import getProfile from '@/services/getProfile'
 
 export default {
     data () {
       return {
-        profile: {
-            id: 'id-1',
-            fullname: 'Юров Афанасий Юрьевич',
-            born: '19.08.1978',
-            criminals: [
-                {
-                    id: 'crime-1',
-                    term: { since: '20.04.1989', to: '09.06.2005' },
-                    article: 'ч. 1 ст. 169'
-                },
-                {
-                    id: 'crime-2',
-                    term: { since: '20.04.2007', to: '09.06.2025' },
-                    article: 'ч. 3 ст. 168'
-                },
-            ],
-            jail: {
-                id: 'jail-1',
-                name: 'Зангиатинская колония общего режима'
-            },
-            books: [
-            {
-                number:1,
-                name: 'Л.Н. Толстой "Война и мир"',
-                term: { since: '12.06.2022', to: ''},
-                isComplate: true
-            },
-            {
-                number:2,
-                name: 'Л.Н. Толстой "Война и мир"',
-                term: { since: '12.06.2022', to: ''},
-                isComplate: true
-            },
-            ]
-        },
-        readBooksCount: null
+        profile: {},
+        searchID: '',
+        jailName: '',
+        showTable: false,
+        showProgress: true,
+        showBio: false
       }
     },
     methods: {
     },
     mounted() {
-        let books = this.profile.books
-        for(let i = 0; i!=books.length; i++){
-            if(books[i].isComplate==true){
-                this.readBooksCount+=1
-            }
-        }
+        let urlParams = window
+        .location
+        .search
+        .replace('?','')
+        .split('&')
+        .reduce(
+            function(p,e){
+                var a = e.split('=');
+                p[ decodeURIComponent(a[0])] = decodeURIComponent(a[1]);
+                return p;
+            },
+            {}
+        )
+        this.searchID = urlParams.id
+        this.jailName = urlParams.jail
+
+        getProfile(this.searchID)
+        .then((data)=>{
+            this.profile = data
+            this.showTable = true
+            this.showProgress = false
+            this.showBio = true
+        })
     },
     components:{
         ProfileBooksTable
@@ -152,5 +150,13 @@ export default {
     }
     .v-application p{
         margin: 0;
+    }
+
+    .prisoners-progress{
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 </style>

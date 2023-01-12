@@ -20,24 +20,27 @@
       </div>
 
       <v-spacer></v-spacer>
-      <v-icon
-          dark
-          left
-          @click="$router.go(-1)"
-        >
-          mdi-arrow-left
-        </v-icon>
-      <v-icon
-          dark
-          right
-          @click="$router.go(+1)"
-        >
-          mdi-arrow-right
-        </v-icon>
+      <div class="div" v-if="!$route.meta.hideHeader">
+        <v-icon
+            dark
+            left
+            @click="$router.go(-1)"
+          >
+            mdi-arrow-left
+          </v-icon>
+        <v-icon
+            dark
+            right
+            @click="$router.go(+1)"
+          >
+            mdi-arrow-right
+          </v-icon>
+      </div>
       <v-spacer></v-spacer>
 
       <v-menu offset-y
        max-width="120"
+       v-if="!$route.meta.hideHeader"
        >
         <template v-slot:activator="{ on, attrs }">
           <v-btn
@@ -55,7 +58,7 @@
               transition="scale-transition"
               width="15"
             />
-            User
+            {{ !$route.meta.hideHeader ? user.name : ''}}
           </v-btn>
         </template>
         <v-list>
@@ -63,6 +66,7 @@
           class="header__btn" 
           small color="#03212C" 
           dark
+          @click="leave"
           >
             <span style="color:red">Выйти</span>
           </v-btn>
@@ -82,8 +86,31 @@ export default {
   name: 'App',
 
   data: () => ({
-    }),
-};
+    user: {}
+  }),
+  methods: {
+    leave: function (){
+      localStorage.removeItem('user')
+      window.location.reload()
+    }
+  },
+  watch: {
+      $route(to, from) {
+        let user = localStorage.getItem('user')
+        let currentRout = this.$router.currentRoute.name
+
+        if(user){
+          this.user = JSON.parse(user)
+        }
+        if(!user){
+          this.$router.push('/').catch(()=>{})
+        }
+        if(user && currentRout=='auth'){
+          this.$router.push('/jails').catch(()=>{})
+        }
+      }
+  }
+}
 </script>
 
 <style>

@@ -1,21 +1,38 @@
 import db from './db'
 
-export default function checkUser(login, password){
+export default async function checkUser(login, password){
     let query = db.collection('users')
+    let response = {}
 
-    query.where("login", "==", login)
+    await query.where("login", "==", login)
     .get()
     .then((querySnapshot) => {
-        querySnapshot.forEach((doc) => {
-            console.log(doc.data())
-        });
+        if(querySnapshot.docs.length){
+            return querySnapshot.docs[0].data()
+        } else{
+            response.status = false
+            response.error = 'Введён не существующий логин'
+            return false
+        }
     })
-    .catch((error) => {
-        console.log("Error getting document:", error);
-    });
+    .then((data)=>{
+        if(!data){
+            return
+        }
 
-    
-    // проверка на запрос подобного логина
-    // если да, то проверка пароля
-    // если да, то занесение данных в LocalStorage
+        if(data.password == password){
+            response.status = true
+            response.user = {
+                name: data.login,
+                permissions: data.permissions
+            }
+            return response
+        } else{
+            response.status = false
+            response.error = 'Введён не верный пароль'
+            return
+        }
+    })
+
+    return response
 }

@@ -12,7 +12,7 @@
                         Срок прибывания в учреждении
                     </th>
                     <th class="text-left">
-                        Количество прочитанных книг
+                        Количество книг
                     </th>
                     <th class="text-left">
                         Действие
@@ -22,11 +22,11 @@
                 <tbody>
                     <tr
                     v-for="item in prisoners"
-                    :key="item.name"
+                    :key="item.fullname"
                     >
                     <td>{{ item.fullname }}</td>
-                    <td><b>с</b> {{ item.term.since }}<br><b>до</b> {{ item.term.to }}</td>
-                    <td>{{ item.booksCount }}</td>
+                    <td><b>с</b> {{ item.criminals[0].term.since }}<br><b>до</b> {{ item.criminals[0].term.to }}</td>
+                    <td>!</td>
                     <td>
                         <v-menu offset-y max-width="120">
                             <template v-slot:activator="{ on, attrs }">
@@ -54,7 +54,7 @@
                         dark
                         color="#0B465A"
                         small
-                        @click="goToProfile"
+                        @click="goToProfile(item.id)"
                         >
                             <v-icon
                                 size="22"
@@ -68,6 +68,18 @@
                 </tbody>
             </template>
         </v-simple-table>
+
+        <div class="prisoners-progress" v-if="showProgress">
+            <v-progress-circular
+            :width="3"
+            color="#0B465A"
+            indeterminate
+            ></v-progress-circular>
+        </div>
+
+        <div class="prisoners-empty" v-if="prisoners.length<=0 && showEmpted">
+            <p>Данных нет</p>
+        </div>
     </div>
 </template>
 
@@ -75,21 +87,39 @@
 import EditPrisoner from './EditPrisoner.vue'
 import DeletePrisoner from './DeletePrisoner.vue'
 import ReleasePrisoner from './ReleasePrisoner.vue'
-import TransferPrisoner from './TransferPrisoner.vue';
+import TransferPrisoner from './TransferPrisoner.vue'
+import getPrisonersList from '@/services/getPrisonersList'
 
 export default {
     props:{
-        prisonersList: Array
+        jail: String,
+        name: String
     },
     data() {
         return {
-            prisoners: this.prisonersList
+            prisoners: [],
+            currentJail: '',
+            showProgress: true,
+            jailName: '',
+            showEmpted: false
         }
     },
     methods:{
-        goToProfile: function (){
-            this.$router.push('/profile')
+        goToProfile: function (id){
+            this.$router.push(`/profile?id=${id}&jail=${this.jailName}`)
         }
+    },
+    mounted() {
+        setTimeout(()=>{
+            this.currentJail = this.jail
+            this.jailName = this.name
+            getPrisonersList(this.currentJail)
+            .then((data)=>{
+                this.prisoners = data
+                this.showProgress = false
+                this.showEmpted = true
+            })
+        },500)
     },
     components:{
         EditPrisoner,
@@ -103,5 +133,23 @@ export default {
 <style>
 .prisoners-errors-box{
     width: 100%;
-} 
+}
+.prisoners-progress{
+    width: 100%;
+    display: flex;
+    height: 150px;
+    justify-content: center;
+    align-items: center;
+}
+
+.prisoners-empty{
+    width: 100%;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(145, 145, 145, 0.144);
+    color: rgb(88, 88, 88);
+    font-size: 0.85em;
+}
 </style>

@@ -68,6 +68,8 @@
 </template>
 
 <script>
+import addJail from '@/services/addJail'
+
 export default {
     data() {
         return {
@@ -78,7 +80,7 @@ export default {
         }
     },
     methods: {
-       addJail: function(){
+       addJail: async function(){
             if(!this.jailName){
                 return this.errors.push('Заполните поля названия нового учреждения')
                 
@@ -88,6 +90,10 @@ export default {
             }
 
             // Сохранение в бд
+            let toSaveData = {
+                name: this.jailName
+            }
+           await addJail(toSaveData)
 
             this.addSuccess = true
             this.errors = []
@@ -96,6 +102,7 @@ export default {
                 this.dialog = false
                 this.jailName = ''
                 this.addSuccess = false
+                window.location.reload()
             },2000)
        }
     },

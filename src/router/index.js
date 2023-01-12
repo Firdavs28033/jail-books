@@ -8,7 +8,8 @@ const routes = [
   {
     path: '/',
     name: 'auth',
-    component: AuthView
+    component: AuthView,
+    meta: { hideHeader: true },
   },
   {
     path: '/jails',

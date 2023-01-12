@@ -98,8 +98,8 @@ export default {
             dialog: false,
             prisonerFullname: this.prisoner.fullname,
             prisonerBorn: this.prisoner.born,
-            prisonerCriminal: this.prisoner.criminal,
-            prisonerTerm: this.prisoner.term,
+            prisonerCriminal: this.prisoner.criminals[0].article,
+            prisonerTerm: this.prisoner.criminals[0].term,
 
             fullname: '',
             born: '',

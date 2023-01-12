@@ -1,6 +1,6 @@
 <template lang="">
     <div class="jail__table">
-        <v-simple-table>
+        <v-simple-table class="jail__table">
             <template v-slot:default>
             <thead>
                 <tr>
@@ -21,9 +21,9 @@
                 :key="item.name"
                 >
                 <td>{{ item.name }}</td>
-                <td>{{ item.amount }}</td>
+                <td>!</td>
                 <td>
-                    <v-menu offset-y max-width="120">
+                    <v-menu offset-y max-width="120" v-if="user.permissions[0].level=='*'">
                         <template v-slot:activator="{ on, attrs }">
                             <v-btn
                             color="#777"
@@ -32,7 +32,6 @@
                             v-on="on"
                             small
                             class="mr-2"
-                            v-if="item.perm"
                             >
                             ···
                             </v-btn>
@@ -47,8 +46,8 @@
                     dark
                     color="#0B465A"
                     small
-                    v-if="item.action"
-                    @click="goToPrisoners"
+                    v-if="user.permissions[0].jail == item.id || user.permissions[0].level == '*'"
+                    @click="goToPrisoners(item.id, item.name)"
                     >
                     перейти →
                     </v-btn>
@@ -58,26 +57,47 @@
             </tbody>
             </template>
         </v-simple-table>
+
+        <div class="jails-progress" v-if="showProgress">
+            <v-progress-circular
+            :width="3"
+            color="#0B465A"
+            indeterminate
+            ></v-progress-circular>
+        </div>
+
+        <div class="jails-empty" v-if="jails.length<=0 && showEmpted">
+            <p>Данных нет</p>
+        </div>
     </div>
 </template>
 
 <script>
-import EditJail from './EditJail.vue';
-import DeleteJail from './DeleteJail.vue';
+import EditJail from './EditJail.vue'
+import DeleteJail from './DeleteJail.vue'
+import getJailsList from '@/services/getJailsList'
 
 export default {
-    props:{
-        jailsList: Array
-    },
     data() {
         return {
-            jails: this.jailsList
+            jails: [],
+            user: JSON.parse(localStorage.getItem('user')),
+            showProgress: true,
+            showEmpted: false
         }
     },
     methods:{
-        goToPrisoners: function (){
-            this.$router.push('/prisoners')
+        goToPrisoners: function (id, name){
+            this.$router.push(`/prisoners?id=${id}&name=${name}`)
         }
+    },
+    mounted() {
+        getJailsList()
+        .then((data)=>{
+            this.jails = data
+            this.showProgress = false
+            this.showEmpted = true
+        })
     },
     components:{
         EditJail,
@@ -89,5 +109,23 @@ export default {
 <style>
 .jails-errors-box{
     width: 100%;
-} 
+}
+.jails-progress{
+    width: 100%;
+    display: flex;
+    height: 150px;
+    justify-content: center;
+    align-items: center;
+}
+
+.jails-empty{
+    width: 100%;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(145, 145, 145, 0.144);
+    color: rgb(88, 88, 88);
+    font-size: 0.85em;
+}
 </style>

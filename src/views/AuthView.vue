@@ -12,9 +12,9 @@
                         <v-btn
                         depressed
                         color="#0B465A"
-                        class="btn"
-                        dark
+                        class="btn auth-btn"
                         @click="authUser"
+                        :disabled="blockBtn"
                         >
                         Войти
                         </v-btn>
@@ -43,6 +43,15 @@
                 v-if="authSuccess"
                 >Вход успешно выполнен</v-alert>
         </div>
+
+        <v-progress-linear
+        indeterminate
+        color="#0B465A"
+        background-color="#CFD4D4"
+        height="5"
+        class="auth-progress"
+        v-if="showProgress"
+        ></v-progress-linear>
     </div>
 </template>
 
@@ -55,7 +64,9 @@ export default {
             login: '',
             password: '',
             errors:[],
-            authSuccess: false
+            authSuccess: false,
+            blockBtn: false,
+            showProgress: false,
         }
     },
     methods:{
@@ -64,25 +75,40 @@ export default {
         },
         authUser: function (){
             this.errors = []
+            this.blockBtn = true
+            this.showProgress = this.showProgress = true
             
             if(!this.login){
+                this.blockBtn = this.showProgress = false
                 return this.errors.push('Введите логин')
             }
             if(!this.password){
+                this.blockBtn = this.showProgress = false
                 return this.errors.push('Введите пароль')
             }
 
             checkUser(this.login, this.password)
-            console.log(this.login);
-            // this.authSuccess = true
-            // this.errors = []
+            .then((res)=>{
+                if(!res.status){
+                    this.blockBtn = this.showProgress = false
+                    return this.errors.push(res.error)
+                } else{
+                    this.authSuccess = true
+                    this.errors = []
+                    localStorage.setItem('user', JSON.stringify(res.user))
+                    this.showProgress = false
 
-            // setTimeout(()=>{
-            //     this.login= ''
-            //     this.password = ''
-            //     this.authSuccess = false
-            //     this.$router.push('/jails')
-            // },2000)
+                    return setTimeout(()=>{
+                        this.$router.push('/jails')
+                        this.login= ''
+                        this.password = ''
+                        this.authSuccess = false
+                        this.blockBtn = false
+                    },2000)
+                }
+            })
+
+            //console.log(this.login);
         }
     },
     watch:{
@@ -91,6 +117,13 @@ export default {
         },
         password: function () {
             this.errors = []
+        }
+    },
+    mounted() {
+        let user = localStorage.getItem('user')
+
+        if(user){
+            this.$router.push('/jails')
         }
     },
     components:{
@@ -140,8 +173,16 @@ export default {
     }
     
     .auth-errors-box{
-    position: absolute;
-    top: 0;
-    width: 100%;
+        position: absolute;
+        top: 0;
+        width: 100%;
+    }
+    .auth-progress{
+        position: absolute;
+        bottom: 0
+    }
+
+    .auth-btn.theme--light.v-btn {
+        color: rgb(255 255 255 / 87%);
     }
 </style>

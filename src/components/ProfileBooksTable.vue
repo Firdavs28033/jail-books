@@ -62,6 +62,14 @@
             </tbody>
             </template>
         </v-simple-table>
+
+        <div class="books-progress" v-if="showProgress">
+            <v-progress-circular
+            :width="3"
+            color="#0B465A"
+            indeterminate
+            ></v-progress-circular>
+        </div>
     </div>
 </template>
 
@@ -69,15 +77,29 @@
 import AddBook from "./AddBook.vue"
 import EditBook from "./EditBook.vue"
 import DeleteBook from "./DeleteBook.vue"
+import getBooks from '@/services/getBooks'
 
 export default {
     props:{
-        booksList: Array
+        profile: String
     },
     data() {
         return {
-            books: this.booksList
+            searchID: '',
+            books: [],
+            showProgress: true
         }
+    },
+    mounted() {
+
+        setTimeout(()=>{
+            this.searchID = this.profile
+            getBooks(this.searchID)
+            .then((data)=>{
+                this.books = data,
+                this.showProgress = false
+            })
+        }, 2000)
     },
     components:{
         AddBook,
@@ -90,5 +112,13 @@ export default {
 <style>
 .profile-errors-box{
     width: 100%;
-} 
+}
+
+.books-progress{
+    width: 100%;
+    display: flex;
+    height: 80px;
+    justify-content: center;
+    align-items: center;
+}
 </style>
