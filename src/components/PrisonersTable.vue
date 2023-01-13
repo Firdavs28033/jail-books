@@ -23,12 +23,13 @@
                     <tr
                     v-for="item in prisoners"
                     :key="item.fullname"
+                    v-if="!item.isDeleted && !item.isReleased"
                     >
                     <td>{{ item.fullname }}</td>
                     <td><b>с</b> {{ item.criminals[0].term.since }}<br><b>до</b> {{ item.criminals[0].term.to }}</td>
                     <td>!</td>
                     <td>
-                        <v-menu offset-y max-width="120">
+                        <v-menu offset-y max-width="120" v-if="user.permissions[0].level=='2' || user.permissions[0].level=='*'">
                             <template v-slot:activator="{ on, attrs }">
                                 <v-btn
                                 color="#777"
@@ -43,9 +44,9 @@
                             </template>
                             <v-list>
                                 <edit-prisoner :prisoner="item"></edit-prisoner>
-                                <delete-prisoner :prisoner="item.fullname"></delete-prisoner>
-                                <release-prisoner :prisoner="item.fullname"></release-prisoner>
-                                <transfer-prisoner :prisoner="item.jail"></transfer-prisoner>
+                                <delete-prisoner :prisoner="item.fullname" :prisonerID="item.id"></delete-prisoner>
+                                <release-prisoner :prisoner="item.fullname" :prisonerID="item.id"></release-prisoner>
+                                <transfer-prisoner :prisoner="item.jail" :prisonerID="item.id"></transfer-prisoner>
                             </v-list>
                         </v-menu>
 
@@ -77,7 +78,7 @@
             ></v-progress-circular>
         </div>
 
-        <div class="prisoners-empty" v-if="prisoners.length<=0 && showEmpted">
+        <div class="prisoners-empty" v-if="prisoners.length<=0 && showEmpted || allDeleted">
             <p>Данных нет</p>
         </div>
     </div>
@@ -101,7 +102,9 @@ export default {
             currentJail: '',
             showProgress: true,
             jailName: '',
-            showEmpted: false
+            showEmpted: false,
+            user: JSON.parse(localStorage.getItem('user')),
+            allDeleted: false
         }
     },
     methods:{
@@ -118,6 +121,17 @@ export default {
                 this.prisoners = data
                 this.showProgress = false
                 this.showEmpted = true
+            })
+            .then(()=>{
+                let deleted = 0
+                for(let i = 0; i != this.prisoners.length; i++){
+                    if(!this.prisoners[i].isDeleted && !this.prisoners[i].isReleased){
+                        deleted++
+                    }
+                }
+                if(deleted==0){
+                    this.allDeleted=true
+                }
             })
         },500)
     },

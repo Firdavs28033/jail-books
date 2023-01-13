@@ -20,7 +20,7 @@ import AddJail from '@/components/AddJail.vue'
 export default {
     data () {
       return {
-        user: JSON.parse(localStorage.getItem('user'))
+        user: JSON.parse(localStorage.getItem('user')),
       }
     },
     components:{

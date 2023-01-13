@@ -55,22 +55,34 @@
             <v-btn
                 color="#0B465A"
                 small
-                dark
                 @click="editJail"
                 justify="center"
                 width="200"
+                :disabled="blockBtn"
+                class="edit-btn"
             >
                 Изменить
             </v-btn>
             </v-card-actions>
+
+            <v-progress-linear
+            indeterminate
+            color="#0B465A"
+            background-color="#CFD4D4"
+            height="5"
+            v-if="showProgress"
+            ></v-progress-linear>
         </v-card>
     </v-dialog>
 </template>
 
 <script>
+import editJail from "@/services/editJail";
+
 export default {
     props:{
-        jail: String
+        jail: String,
+        jailID: String
     },
     data() {
         return {
@@ -78,7 +90,10 @@ export default {
             errors: [],
             editSuccess: false,
             jailName: '',
-            oldName: this.jail
+            oldName: this.jail,
+            id: this.jailID,
+            blockBtn: false,
+            showProgress: false
         }
     },
     methods: {
@@ -93,17 +108,26 @@ export default {
             if(this.jailName==this.oldName){
                 return this.errors.push('Новое наименование учреждения совпадает со старым')
             }
+            this.blockBtn = true
+            this.showProgress = true
 
             // Сохранение в бд
+            editJail(this.id,this.oldName,this.jailName)
+            .then(()=>{
+                this.editSuccess = true
+                this.showProgress = false
+                this.errors = []
 
-            this.editSuccess = true
-            this.errors = []
-
-            return setTimeout(()=>{
-            this.editSuccess = false
-            this.dialog = false
-            this.jailName = ''
-            },2000)
+                return setTimeout(()=>{
+                    this.editSuccess = false
+                    this.dialog = false
+                    this.jailName = ''
+                    this.blockBtn = false
+                    setTimeout(()=>{
+                        window.location.reload()
+                    },400)
+                },2000)
+            })
        }
     },
     watch:{
@@ -115,5 +139,7 @@ export default {
 </script>
 
 <style>
-    
+.edit-btn.theme--light.v-btn {
+    color: rgb(255 255 255 / 87%);
+}
 </style>

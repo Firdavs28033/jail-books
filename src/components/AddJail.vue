@@ -55,14 +55,23 @@
             <v-btn
                 color="#0B465A"
                 small
-                dark
                 @click="addJail"
                 justify="center"
                 width="200"
+                :disabled="blockBtn"
+                class="add-btn"
             >
                 Добавить
             </v-btn>
             </v-card-actions>
+
+            <v-progress-linear
+            indeterminate
+            color="#0B465A"
+            background-color="#CFD4D4"
+            height="5"
+            v-if="showProgress"
+            ></v-progress-linear>
         </v-card>
     </v-dialog>
 </template>
@@ -75,8 +84,11 @@ export default {
         return {
             dialog: false,
             errors:[],
+            jailName: '',
             addSuccess: false,
-            jailName: ''
+            addStatus: this.add,
+            blockBtn: false,
+            showProgress: false
         }
     },
     methods: {
@@ -88,22 +100,29 @@ export default {
             if(this.jailName.length<=12){
                 return this.errors.push('Название учреждения должно быть больше 12 символов')
             }
+            this.blockBtn = true
+            this.showProgress = true
 
             // Сохранение в бд
             let toSaveData = {
                 name: this.jailName
             }
            await addJail(toSaveData)
+           .then(()=>{
+                this.addSuccess = true
+                this.errors = []
+                this.showProgress = false
 
-            this.addSuccess = true
-            this.errors = []
-
-            return setTimeout(()=>{
-                this.dialog = false
-                this.jailName = ''
-                this.addSuccess = false
-                window.location.reload()
-            },2000)
+                return setTimeout(()=>{
+                    this.dialog = false
+                    this.jailName = ''
+                    this.addSuccess = false
+                    this.blockBtn = false
+                    setTimeout(()=>{
+                        window.location.reload()
+                    },400)
+                },2000)
+           })
        }
     },
     watch:{
@@ -115,4 +134,7 @@ export default {
 </script>
 
 <style>
+.add-btn.theme--light.v-btn {
+    color: rgb(255 255 255 / 87%);
+}
 </style>

@@ -18,7 +18,8 @@
             <tbody>
                 <tr
                 v-for="item in jails"
-                :key="item.name"
+                :key="item.id"
+                v-if="!item.isDeleted"
                 >
                 <td>{{ item.name }}</td>
                 <td>!</td>
@@ -37,8 +38,8 @@
                             </v-btn>
                         </template>
                         <v-list>
-                            <edit-jail :jail="item.name"></edit-jail>
-                            <delete-jail :jail="item.name"></delete-jail>
+                            <edit-jail :jail="item.name" :jailID="item.id"></edit-jail>
+                            <delete-jail :jail="item.name" :jailID="item.id"></delete-jail>
                         </v-list>
                     </v-menu>
                    <v-btn
@@ -66,7 +67,7 @@
             ></v-progress-circular>
         </div>
 
-        <div class="jails-empty" v-if="jails.length<=0 && showEmpted">
+        <div class="jails-empty" v-if="jails.length<=0 && showEmpted || allDeleted">
             <p>Данных нет</p>
         </div>
     </div>
@@ -83,7 +84,9 @@ export default {
             jails: [],
             user: JSON.parse(localStorage.getItem('user')),
             showProgress: true,
-            showEmpted: false
+            showEmpted: false,
+            addStatus: false,
+            allDeleted: false
         }
     },
     methods:{
@@ -93,11 +96,22 @@ export default {
     },
     mounted() {
         getJailsList()
-        .then((data)=>{
-            this.jails = data
-            this.showProgress = false
-            this.showEmpted = true
-        })
+            .then((data)=>{
+                this.jails = data
+                this.showProgress = false
+                this.showEmpted = true
+            })
+            .then(()=>{
+                let deleted = 0
+                for(let i = 0; i != this.jails.length; i++){
+                    if(!this.jails[i].isDeleted){
+                        deleted++
+                    }
+                }
+                if(deleted==0){
+                    this.allDeleted=true
+                }
+            })
     },
     components:{
         EditJail,

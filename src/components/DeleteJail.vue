@@ -55,22 +55,34 @@
             <v-btn
                 color="red"
                 small
-                dark
                 @click="deleteJail"
                 justify="center"
                 width="200"
+                :disabled="blockBtn"
+                class="delete-btn"
             >
                 Удалить
             </v-btn>
             </v-card-actions>
+
+            <v-progress-linear
+            indeterminate
+            color="#0B465A"
+            background-color="#CFD4D4"
+            height="5"
+            v-if="showProgress"
+            ></v-progress-linear>
         </v-card>
     </v-dialog>
 </template>
 
 <script>
+import deleteJail from '@/services/deleteJail'
+
 export default {
     props:{
-        jail: String
+        jail: String,
+        jailID: String
     },
     data() {
         return {
@@ -78,11 +90,14 @@ export default {
             jailName: this.jail,
             fixName: '',
             errors: [],
-            deleteSuccess: false
+            deleteSuccess: false,
+            id: this.jailID,
+            blockBtn: false,
+            showProgress: false
         }
     },
     methods: {
-        deleteJail: function (){
+        deleteJail: async function (){
             if(!this.fixName){
                 return this.errors.push('Введите название удаляемого учреждения')
             }
@@ -90,17 +105,26 @@ export default {
             if(this.fixName!=this.jailName){
                 return this.errors.push('Введённое значение не совпадает с названием удаляемого учреждения')
             }
+            this.blockBtn = true
+            this.showProgress = true
 
             // Удаление из БД
+            await deleteJail(this.jailID)
+            .then(()=>{
+                this.deleteSuccess = true
+                this.errors = []
+                this.showProgress = false
 
-            this.deleteSuccess = true
-            this.errors = []
-
-            return setTimeout(()=>{
-                this.dialog = false
-                this.fixName = ''
-                this.deleteSuccess = false
-            },2000)
+                return setTimeout(()=>{
+                    this.dialog = false
+                    this.fixName = ''
+                    this.deleteSuccess = false
+                    this.blockBtn = false
+                    setTimeout(()=>{
+                        window.location.reload()
+                    },400)
+                },2000)
+            })
         }    
     },
     watch:{
@@ -112,5 +136,7 @@ export default {
 </script>
 
 <style>
-    
+    .delete-btn.theme--light.v-btn {
+        color: rgb(255 255 255 / 87%);
+    }
 </style>

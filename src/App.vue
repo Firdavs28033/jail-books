@@ -20,7 +20,7 @@
       </div>
 
       <v-spacer></v-spacer>
-      <div class="div" v-if="!$route.meta.hideHeader">
+      <div class="div" v-if="!$route.meta.hideHeader && connection">
         <v-icon
             dark
             left
@@ -40,7 +40,7 @@
 
       <v-menu offset-y
        max-width="120"
-       v-if="!$route.meta.hideHeader"
+       v-if="!$route.meta.hideHeader && connection"
        >
         <template v-slot:activator="{ on, attrs }">
           <v-btn
@@ -74,8 +74,18 @@
       </v-menu>
     </v-app-bar>
 
-    <v-main>
-      <router-view/>
+    <v-main class="main">
+      <router-view v-if="connection"/>
+
+      <div class="connection-down" v-if="!connection">
+        <v-img
+        contain
+        max-height="150"
+        max-width="250"
+        src="./assets/network.png"
+      ></v-img>
+      <h2 class="mt-3">Нет соединения с Интернетом</h2>
+      </div>
     </v-main>
   </v-app>
 </template>
@@ -86,7 +96,8 @@ export default {
   name: 'App',
 
   data: () => ({
-    user: {}
+    user: {},
+    connection: true
   }),
   methods: {
     leave: function (){
@@ -109,6 +120,27 @@ export default {
           this.$router.push('/jails').catch(()=>{})
         }
       }
+  },
+  mounted() {
+
+      let connectionCheck = setInterval(()=>{
+        fetch('http://google.com',{
+          method: 'GET',
+          mode: 'no-cors',
+        })
+        .then((data)=>{
+          if(!this.connection){
+            this.connection = true
+            this.user = JSON.parse(localStorage.getItem('user'))
+          }
+          return
+        })
+        .catch((e)=>{
+          this.connection = false
+          return
+        })
+      }, 5000)
+
   }
 }
 </script>
@@ -156,5 +188,20 @@ export default {
 .input:focus{
   outline: none;
     box-shadow: 0px 0px 5px 5px #0b465a42;
+}
+
+.main{
+  position: relative;
+}
+
+.connection-down{
+  position: absolute;
+  top:0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 </style>

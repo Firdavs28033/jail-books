@@ -7,7 +7,7 @@
                     <h4>{{ jailName }}</h4>
                 </div>
                 
-                <add-prisoner></add-prisoner>
+                <add-prisoner v-if="user.permissions[0].level=='2' || user.permissions[0].level=='*'" :jail="currentJail"></add-prisoner>
             </div>
 
             <prisoners-table :jail="currentJail" :name="jailName"></prisoners-table>
@@ -23,7 +23,8 @@ export default {
     data () {
       return {
         currentJail: '',
-        jailName: ''
+        jailName: '',
+        user: JSON.parse(localStorage.getItem('user')),
       }
     },
     mounted() {

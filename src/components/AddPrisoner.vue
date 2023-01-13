@@ -73,20 +73,35 @@
             <v-btn
                 color="#0B465A"
                 small
-                dark
                 @click="addPrisoner"
                 justify="center"
                 width="200"
+                :disabled="blockBtn"
+                class="add-btn"
             >
                 Добавить
             </v-btn>
             </v-card-actions>
+
+            <v-progress-linear
+            indeterminate
+            color="#0B465A"
+            background-color="#CFD4D4"
+            height="5"
+            v-if="showProgress"
+            ></v-progress-linear>
         </v-card>
     </v-dialog>
 </template>
 
 <script>
+import addPrisoner from "@/services/addPrisoner"
+import normalizeDate from '@/plugins/normalizeDate'
+
 export default {
+    props:{
+        jail: String
+    },
     data() {
         return {
             dialog: false,
@@ -96,7 +111,9 @@ export default {
             born: '',
             criminal: '',
             termSince: '',
-            termTo: ''
+            termTo: '',
+            showProgress: false,
+            blockBtn: false
 
         }
     },
@@ -123,19 +140,38 @@ export default {
             if(!this.termTo){
                 return this.errors.push('Укажите срок окончания отбывания наказания')
             }
-            
-            this.addSuccess = true
-            this.errors = []
+            this.showProgress = true
+            this.blockBtn = true
 
-            return setTimeout(()=>{
-                this.dialog = false
-                this.fullname = ''
-                this.born = ''
-                this.criminal = ''
-                this.termSince = ''
-                this.termTo = ''
-                this.addSuccess = false
-            },2000)
+            // сохранение
+            let toSaveData = {
+                fullname: this.fullname,
+                born: normalizeDate(this.born),
+                criminals: [],
+            }
+            toSaveData.criminals.push({ article: this.criminal, term: { since: normalizeDate(this.termSince), to: normalizeDate(this.termTo) } })
+            toSaveData.jail = this.jail
+
+            addPrisoner(toSaveData)
+            .then(()=>{
+                this.addSuccess = true
+                this.errors = []
+                this.showProgress = false
+
+                return setTimeout(()=>{
+                    this.dialog = false
+                    this.fullname = ''
+                    this.born = ''
+                    this.criminal = ''
+                    this.termSince = ''
+                    this.termTo = ''
+                    this.addSuccess = false
+                    this.blockBtn = false
+                    setTimeout(()=>{
+                        window.location.reload()
+                    },400)
+                },2000)
+            })
         }
     },
     watch:{
@@ -172,5 +208,8 @@ export default {
         display: flex;
         flex-direction: row;
         align-items: center;
+    }
+    .add-btn.theme--light.v-btn {
+        color: rgb(255 255 255 / 87%);
     }
 </style>

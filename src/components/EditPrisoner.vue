@@ -27,7 +27,7 @@
                 <label for="edit-prisoner-date">Дата рождения: <b>{{ prisonerBorn }}</b> → {{ born }}</label>
                 <input id='edit-prisoner-date' class="input" type="date" v-model="born">
                 
-                <label for="add-prisoner-crime">Последняя cудимсоть: <b>{{ prisonerCriminal }}</b> → {{ criminal }}</label>
+                <label for="add-prisoner-crime">Последняя cудимость: <b>{{ prisonerCriminal }}</b> → {{ criminal }}</label>
                 <input id='add-prisoner-crime' class="input" type="text" v-model="criminal">
 
                 <div class="crime-info">
@@ -74,19 +74,30 @@
             <v-btn
                 color="#0B465A"
                 small
-                dark
                 @click="editPrisoner"
                 justify="center"
                 width="200"
+                :disabled="blockBtn"
+                class="edit-btn"
             >
                 Изменить
             </v-btn>
             </v-card-actions>
+
+            <v-progress-linear
+            indeterminate
+            color="#0B465A"
+            background-color="#CFD4D4"
+            height="5"
+            v-if="showProgress"
+            ></v-progress-linear>
         </v-card>
     </v-dialog>
 </template>
 
 <script>
+import editPrisoner from "@/services/editPrisoner";
+
 export default {
     props:{
         prisoner: Object
@@ -100,16 +111,18 @@ export default {
             prisonerBorn: this.prisoner.born,
             prisonerCriminal: this.prisoner.criminals[0].article,
             prisonerTerm: this.prisoner.criminals[0].term,
+            showProgress: false,
+            blockBtn: false,
 
             fullname: '',
             born: '',
             criminal: '',
             termSince: '',
-            termTo: ''
+            termTo: '',
         }
     },
     methods:{
-        editPrisoner: function (){
+        editPrisoner: async function (){
             if(!this.fullname && !this.born && !this.criminal && !this.termSince && !this.termTo){
                 return this.errors.push('Не были внесены изменения')
             }
@@ -133,18 +146,45 @@ export default {
             if(this.prisonerTermTo == this.termTo){
                 return this.errors.push('Новый срок окончания исполнения наказания совпадает со старым')
             }
+            this.showProgress = true
+            this.blockBtn = true
+
+            let toEditData={
+                id: this.prisoner.id,
+                fullname: this.fullname,
+                born: this.born,
+                criminal: this.criminal,
+                termSince: this.termSince,
+                termTo: this.termTo,
+
+                oldFullname: this.prisoner.fullname,
+                oldBorn: this.prisoner.born,
+                oldCriminal: this.prisoner.criminals[0].article,
+                oldTermTo: this.prisoner.criminals[0].term.to,
+                oldTermSince: this.prisoner.criminals[0].term.since,
+            }
+
+            await editPrisoner(toEditData)
+            .then(()=>{
+                this.editSuccess = true
+                this.errors = []
+                this.showProgress = false
+
+                return setTimeout(()=>{
+                    this.dialog = false
+                    this.fullname = ''
+                    this.born = ''
+                    this.criminal = ''
+                    this.termSince = ''
+                    this.termTo = ''
+                    this.editSuccess = false
+                    this.blockBtn = false
+                    setTimeout(()=>{
+                        window.location.reload()
+                    },400)
+                },2000)
+            })
             
-            this.editSuccess = true
-            this.errors = []
-            return setTimeout(()=>{
-                this.dialog = false
-                this.fullname = ''
-                this.born = ''
-                this.criminal = ''
-                this.termSince = ''
-                this.termTo = ''
-                this.editSuccess = false
-            },2000)
         }
     },
     watch:{
@@ -172,5 +212,8 @@ export default {
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-    }
+}
+.edit-btn.theme--light.v-btn {
+    color: rgb(255 255 255 / 87%);
+}
 </style>

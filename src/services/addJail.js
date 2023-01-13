@@ -1,17 +1,17 @@
 import db from './db'
-import getJailsList from './getJailsList'
 
 export default async function addJail(data){
-    let jailsList = await getJailsList()
-    let nextJail = jailsList.length
     let date = new Date()
     let outputDate = `${date.getDate()}.${date.getMonth()+1}.${date.getFullYear()}`
+    let genID = Math.floor(Math.random()*10000000)+1
     
-    data.id = `jail-${nextJail+1}`
+    data.id = `jail-${genID}`
     data.addDate = outputDate,
-    data.changes = [{date:outputDate, action:{type: 'create', description: ''}}]
-    
-    db.collection("jails").doc(`jail-${nextJail+1}`).set({
+    data.changes = [{date: outputDate, description: `created`}]
+    data.isDeleted = false
+
+    await db.collection("jails")
+    await db.collection("jails").doc(`jail-${genID}`).set({
         ...data
     })
     .catch((error) => {
