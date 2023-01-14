@@ -14,5 +14,9 @@ export default async function getPrisonersList(id){
         console.log("Error getting documents: ", error)
     })
 
+    if(result.length == 0){
+        return false
+    }
+
     return result
 }

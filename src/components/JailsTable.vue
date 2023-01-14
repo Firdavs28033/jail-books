@@ -59,7 +59,7 @@
             </template>
         </v-simple-table>
 
-        <div class="jails-progress" v-if="showProgress">
+        <div class="jails-progress mt-8" v-if="showProgress">
             <v-progress-circular
             :width="3"
             color="#0B465A"
@@ -67,7 +67,7 @@
             ></v-progress-circular>
         </div>
 
-        <div class="jails-empty" v-if="jails.length<=0 && showEmpted || allDeleted">
+        <div class="jails-empty" v-if="jails.length<=0 && showEmpted || allDeleted && showEmpted">
             <p>Данных нет</p>
         </div>
     </div>
@@ -99,9 +99,32 @@ export default {
     mounted() {
         getJailsList()
             .then((data)=>{
-                this.jails = data
-                this.showEmpted = true
+                if(data){
+                    this.jails = data
+                } else{
+                    this.showEmpted = true
+                    this.allDeleted = true
+                    this.showProgress = false
+                    return
+                }
+                
             })
+            .then(()=>{
+                for(let i = 0; i != this.jails.length; i++){
+                    getPrisonersList(this.jails[i].id)
+                    .then((data)=>{
+                        this.jails[i].prisonersCount = 0
+                        if(data){
+                            for(let g = 0; g != data.length; g++){
+                                if(!data[g].isDeleted && !data[g].isReleased){
+                                    this.jails[i].prisonersCount++
+                                }
+                            }
+                        }
+                        this.getCount++
+                    })
+                }
+             })
             .then(()=>{
                 let deleted = 0
                 for(let i = 0; i != this.jails.length; i++){
@@ -113,20 +136,12 @@ export default {
                     this.allDeleted=true
                 }
             })
-            .then(()=>{
-                for(let i = 0; i != this.jails.length; i++){
-                    getPrisonersList(this.jails[i].id)
-                    .then((data)=>{
-                        this.jails[i].prisonersCount = data.length
-                        this.getCount++
-                    })
-                } 
-             })
     },
     watch:{
         getCount: function (){
             if(this.getCount == this.jails.length){
                 this.showProgress = false
+                this.showEmpted = true
             }
         }
     },
@@ -144,7 +159,6 @@ export default {
 .jails-progress{
     width: 100%;
     display: flex;
-    height: 150px;
     justify-content: center;
     align-items: center;
 }

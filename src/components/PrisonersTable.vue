@@ -12,7 +12,7 @@
                         Срок прибывания в учреждении
                     </th>
                     <th class="text-left">
-                        Количество книг
+                        Количество прочтенных книг
                     </th>
                     <th class="text-left">
                         Действие
@@ -70,7 +70,7 @@
             </template>
         </v-simple-table>
 
-        <div class="prisoners-progress" v-if="showProgress">
+        <div class="prisoners-progress mt-8" v-if="showProgress">
             <v-progress-circular
             :width="3"
             color="#0B465A"
@@ -78,7 +78,7 @@
             ></v-progress-circular>
         </div>
 
-        <div class="prisoners-empty" v-if="prisoners.length<=0 && showEmpted || allDeleted">
+        <div class="prisoners-empty" v-if="prisoners.length<=0 && showEmpted || allDeleted && showEmpted">
             <p>Данных нет</p>
         </div>
     </div>
@@ -116,8 +116,30 @@ export default {
         setTimeout(()=>{
             getPrisonersList(this.jail)
             .then((data)=>{
-                this.prisoners = data
-                this.showEmpted = true
+                if(data){
+                    this.prisoners = data
+                }else{
+                    this.showEmpted = true
+                    this.allDeleted = true
+                    this.showProgress = false
+                    return
+                }
+            })
+            .then(()=>{
+                for(let i = 0; i != this.prisoners.length; i++){
+                    getBooks(this.prisoners[i].id)
+                    .then((data)=>{
+                        this.prisoners[i].booksCount = 0
+                        if(data){
+                            for(let g = 0; g != data.length; g++){
+                                if(data[g].isComplate){
+                                    this.prisoners[i].booksCount++
+                                }
+                            }
+                        }
+                        this.getCount++
+                    })
+                }
             })
             .then(()=>{
                 let deleted = 0
@@ -130,21 +152,13 @@ export default {
                     this.allDeleted=true
                 }
             })
-            .then(()=>{
-                for(let i = 0; i != this.prisoners.length; i++){
-                    getBooks(this.prisoners[i].id)
-                    .then((data)=>{
-                        this.prisoners[i].booksCount = data.length
-                        this.getCount++
-                    })
-                }
-            })
         },400)
     },
     watch:{
         getCount: function (){
             if(this.getCount == this.prisoners.length){
                 this.showProgress = false
+                this.showEmpted = true
             }
         }
     },
@@ -164,7 +178,6 @@ export default {
 .prisoners-progress{
     width: 100%;
     display: flex;
-    height: 150px;
     justify-content: center;
     align-items: center;
 }

@@ -14,5 +14,8 @@ export default async function getJailsList(){
         console.log("Error getting documents: ", error)
     })
 
+    if(result.length==0){
+        return false
+    }
     return result
 }

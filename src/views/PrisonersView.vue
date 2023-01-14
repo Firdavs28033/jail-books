@@ -30,8 +30,8 @@ export default {
     mounted() {
         let urlParams = window
         .location
-        .search
-        .replace('?','')
+        .hash
+        .replace('#/prisoners?','')
         .split('&')
         .reduce(
             function(p,e){
@@ -64,5 +64,5 @@ export default {
 }
 .prisoners__table{
         margin-top: 30px;
-    }
+}
 </style>

@@ -83,8 +83,8 @@ export default {
     mounted() {
         let urlParams = window
         .location
-        .search
-        .replace('?','')
+        .hash
+        .replace('#/profile?','')
         .split('&')
         .reduce(
             function(p,e){
