@@ -51,7 +51,7 @@ export default async function editPrisoner(data){
         ...dateToSave
     })
     .catch((error) => {
-        console.error("Error writing document: ", error);
-    });
+        console.error("Error writing document: ", error)
+    })
     return
 }

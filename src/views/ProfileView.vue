@@ -27,7 +27,7 @@
                         </tr>
                         <tr>
                             <td><b>Количество прочитанных книг</b></td>
-                            <td>0</td>
+                            <td>{{ readCount }}</td>
                         </tr>
                     </table>
                 </div>
@@ -63,6 +63,7 @@
 <script>
 import ProfileBooksTable from '@/components/ProfileBooksTable.vue'
 import getProfile from '@/services/getProfile'
+import getBooks from '@/services/getBooks'
 
 export default {
     data () {
@@ -72,7 +73,9 @@ export default {
         jailName: '',
         showTable: false,
         showProgress: true,
-        showBio: false
+        showBio: false,
+        books: [],
+        readCount: 0
       }
     },
     methods: {
@@ -100,6 +103,18 @@ export default {
             this.showTable = true
             this.showProgress = false
             this.showBio = true
+        })
+        .then(()=>{
+            getBooks(this.searchID)
+            .then((data)=>{
+                this.books = data
+
+                for(let i = 0; i!=this.books.length; i++){
+                    if(this.books[i].isComplate){
+                        this.readCount +=1
+                    }
+                }
+            })
         })
     },
     components:{

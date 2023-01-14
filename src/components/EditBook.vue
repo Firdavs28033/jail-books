@@ -27,7 +27,7 @@
 
                 <div class="book-check-box">
                     <label for="check-book">Установить статус книги как прочтённую?</label>
-                    <input type="checkbox" id="check-book" class="ml-2" v-model="isComplate">
+                    <input type="checkbox" id="check-book" class="ml-2" v-model="isComplate" :checked="isComplate">
                 </div>
             </div>
 
@@ -60,23 +60,35 @@
             <v-btn
                 color="#0B465A"
                 small
-                dark
                 @click="editBook"
                 justify="center"
                 width="200"
+                :disabled="blockBtn"
+                class="edit-btn"
             >
                 Изменить
             </v-btn>
             </v-card-actions>
+
+            <v-progress-linear
+            indeterminate
+            color="#0B465A"
+            background-color="#CFD4D4"
+            height="5"
+            v-if="showProgress"
+            ></v-progress-linear>
         </v-card>
     </v-dialog>
 </template>
 
 <script>
+import editBook from '@/services/editBook'
+
 export default {
     props:{
         isRead: Boolean,
-        book: String
+        book: String,
+        bookID: String
     },
     data() {
         return {
@@ -85,29 +97,50 @@ export default {
             editSuccess: false,
             oldName: this.book,
             name: '',
-            isComplate: this.isRead
+            isComplate: this.isRead,
+            showProgress: false,
+            blockBtn: false,
         }
     },
     methods: {
         editBook: function (){
-            if(!this.name){
-                return this.errors.push('Заполните поля нового названия книги, укажите автора')
-            }
-            if(this.name.length<=12){
+            // if(!this.name){
+            //     return this.errors.push('Заполните поля нового названия книги, укажите автора')
+            // }
+            if(this.name && this.name.length<=12){
                 return this.errors.push('Вводимое значение должно быть больше 12 символов')
             }
             if(this.name==this.oldName){
                 return this.errors.push('Указанная книга совпадает со старой')
             }
+            this.showProgress = true
+            this.blockBtn = true
 
-            this.editSuccess =true
-            this.errors = []
+            let toEditData = {
+                name: this.name,
+                isComplate: this.isComplate,
+                id: this.bookID,
 
-            return setTimeout(()=>{
-                this.dialog = false
-                this.editSuccess = false
-                this.name = ''
-            }, 2000)
+                oldName: this.oldName,
+                oldComplate: this.isRead
+            }
+
+            editBook(toEditData)
+            .then(()=>{
+                this.editSuccess =true
+                this.errors = []
+                this.showProgress = false
+
+                return setTimeout(()=>{
+                    this.dialog = false
+                    this.editSuccess = false
+                    this.name = ''
+                    this.blockBtn = false
+                    setTimeout(()=>{
+                        window.location.reload()
+                    },400)
+                }, 2000)
+            })
         }
     },
     watch:{
@@ -131,5 +164,8 @@ export default {
     .book-check-box>input{
         width: 20px;
         height: 20px;
+    }
+    .edit-btn.theme--light.v-btn {
+        color: rgb(255 255 255 / 87%);
     }
 </style>

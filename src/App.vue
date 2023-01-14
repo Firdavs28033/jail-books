@@ -122,7 +122,6 @@ export default {
       }
   },
   mounted() {
-
       let connectionCheck = setInterval(()=>{
         fetch('http://google.com',{
           method: 'GET',

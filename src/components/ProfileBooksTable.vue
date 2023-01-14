@@ -3,7 +3,7 @@
         <div class="profile__books-header">
             <h2>Книги</h2>
 
-            <add-book></add-book>
+            <add-book :profileID="profile"></add-book>
         </div>
         <v-simple-table>
             <template v-slot:default>
@@ -53,8 +53,8 @@
                             </v-btn>
                         </template>
                         <v-list>
-                            <edit-book :isRead="item.isComplate" :book="item.name"></edit-book>
-                            <delete-book :book="item.name"></delete-book>
+                            <edit-book :isRead="item.isComplate" :book="item.name" :bookID="item.id"></edit-book>
+                            <delete-book :book="item.name" :bookID="item.id"></delete-book>
                         </v-list>
                     </v-menu>
                 </td>
@@ -70,6 +70,10 @@
             indeterminate
             ></v-progress-circular>
         </div>
+
+    <div class="books-empty" v-if="books.length<=0 && showEmpted">
+        <p>Данных нет</p>
+    </div>
     </div>
 </template>
 
@@ -87,19 +91,19 @@ export default {
         return {
             searchID: '',
             books: [],
-            showProgress: true
+            showProgress: true,
+            showEmpted: false
         }
     },
     mounted() {
+        this.searchID = this.profile
 
-        setTimeout(()=>{
-            this.searchID = this.profile
-            getBooks(this.searchID)
-            .then((data)=>{
-                this.books = data,
-                this.showProgress = false
-            })
-        }, 2000)
+        getBooks(this.searchID)
+        .then((data)=>{
+            this.books = data,
+            this.showProgress = false,
+            this.showEmpted = true
+        })
     },
     components:{
         AddBook,
@@ -120,5 +124,16 @@ export default {
     height: 80px;
     justify-content: center;
     align-items: center;
+}
+
+.books-empty{
+    width: 100%;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(145, 145, 145, 0.144);
+    color: rgb(88, 88, 88);
+    font-size: 0.85em;
 }
 </style>

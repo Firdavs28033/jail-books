@@ -19,10 +19,10 @@
                 <tr
                 v-for="item in jails"
                 :key="item.id"
-                v-if="!item.isDeleted"
+                v-if="!item.isDeleted && getCount == jails.length"
                 >
                 <td>{{ item.name }}</td>
-                <td>!</td>
+                <td>{{ item.prisonersCount }}</td>
                 <td>
                     <v-menu offset-y max-width="120" v-if="user.permissions[0].level=='*'">
                         <template v-slot:activator="{ on, attrs }">
@@ -77,6 +77,7 @@
 import EditJail from './EditJail.vue'
 import DeleteJail from './DeleteJail.vue'
 import getJailsList from '@/services/getJailsList'
+import getPrisonersList from '@/services/getPrisonersList'
 
 export default {
     data() {
@@ -86,7 +87,8 @@ export default {
             showProgress: true,
             showEmpted: false,
             addStatus: false,
-            allDeleted: false
+            allDeleted: false,
+            getCount: 0,
         }
     },
     methods:{
@@ -98,7 +100,6 @@ export default {
         getJailsList()
             .then((data)=>{
                 this.jails = data
-                this.showProgress = false
                 this.showEmpted = true
             })
             .then(()=>{
@@ -112,6 +113,22 @@ export default {
                     this.allDeleted=true
                 }
             })
+            .then(()=>{
+                for(let i = 0; i != this.jails.length; i++){
+                    getPrisonersList(this.jails[i].id)
+                    .then((data)=>{
+                        this.jails[i].prisonersCount = data.length
+                        this.getCount++
+                    })
+                } 
+             })
+    },
+    watch:{
+        getCount: function (){
+            if(this.getCount == this.jails.length){
+                this.showProgress = false
+            }
+        }
     },
     components:{
         EditJail,

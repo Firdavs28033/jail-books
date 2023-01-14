@@ -55,26 +55,42 @@
             <v-btn
                 color="#0B465A"
                 small
-                dark
                 @click="addBook"
                 justify="center"
                 width="200"
+                :disabled="blockBtn"
+                class="add-btn"
             >
                 Добавить
             </v-btn>
             </v-card-actions>
+
+            <v-progress-linear
+            indeterminate
+            color="#0B465A"
+            background-color="#CFD4D4"
+            height="5"
+            v-if="showProgress"
+            ></v-progress-linear>
         </v-card>
     </v-dialog>
 </template>
 
 <script>
+import addBook from '@/services/addBook'
+
 export default {
+    props:{
+        profileID: String
+    },
     data() {
         return {
             dialog: false,
             errors: [],
             addSuccess: false,
-            book: ''
+            book: '',
+            showProgress: false,
+            blockBtn: false
         }
     },
     methods: {
@@ -85,15 +101,31 @@ export default {
             if(this.book.length<=12){
                 return this.errors.push('Вводимое значение должно быть больше 12 символов')
             }
+            this.showProgress = true
+            this.blockBtn = true
 
-            this.errors = []
-            this.addSuccess = true
+            let dataToSave = {
+                name: this.book,
+                prisoner: this.profileID,
+                term:{}
+            }
 
-            setTimeout(()=>{
-                this.dialog = false
-                this.addSuccess = false
-                this.book = ''
-            }, 2000)
+            addBook(dataToSave)
+            .then(()=>{
+                this.errors = []
+                this.addSuccess = true
+                this.showProgress = false
+
+                setTimeout(()=>{
+                    this.dialog = false
+                    this.addSuccess = false
+                    this.book = ''
+                    this.blockBtn = false
+                    setTimeout(()=>{
+                        window.location.reload()
+                    },400)
+                }, 2000)
+            })
         }
     },
     watch:{
@@ -105,5 +137,7 @@ export default {
 </script>
 
 <style>
-    
+.add-btn.theme--light.v-btn {
+    color: rgb(255 255 255 / 87%);
+}
 </style>

@@ -23,11 +23,11 @@
                     <tr
                     v-for="item in prisoners"
                     :key="item.fullname"
-                    v-if="!item.isDeleted && !item.isReleased"
+                    v-if="!item.isDeleted && !item.isReleased && getCount == prisoners.length"
                     >
                     <td>{{ item.fullname }}</td>
                     <td><b>с</b> {{ item.criminals[0].term.since }}<br><b>до</b> {{ item.criminals[0].term.to }}</td>
-                    <td>!</td>
+                    <td>{{ item.booksCount }}</td>
                     <td>
                         <v-menu offset-y max-width="120" v-if="user.permissions[0].level=='2' || user.permissions[0].level=='*'">
                             <template v-slot:activator="{ on, attrs }">
@@ -90,6 +90,7 @@ import DeletePrisoner from './DeletePrisoner.vue'
 import ReleasePrisoner from './ReleasePrisoner.vue'
 import TransferPrisoner from './TransferPrisoner.vue'
 import getPrisonersList from '@/services/getPrisonersList'
+import getBooks from '@/services/getBooks'
 
 export default {
     props:{
@@ -99,27 +100,23 @@ export default {
     data() {
         return {
             prisoners: [],
-            currentJail: '',
             showProgress: true,
-            jailName: '',
             showEmpted: false,
             user: JSON.parse(localStorage.getItem('user')),
-            allDeleted: false
+            allDeleted: false,
+            getCount: 0
         }
     },
     methods:{
         goToProfile: function (id){
-            this.$router.push(`/profile?id=${id}&jail=${this.jailName}`)
+            this.$router.push(`/profile?id=${id}&jail=${this.name}`)
         }
     },
     mounted() {
         setTimeout(()=>{
-            this.currentJail = this.jail
-            this.jailName = this.name
-            getPrisonersList(this.currentJail)
+            getPrisonersList(this.jail)
             .then((data)=>{
                 this.prisoners = data
-                this.showProgress = false
                 this.showEmpted = true
             })
             .then(()=>{
@@ -133,7 +130,23 @@ export default {
                     this.allDeleted=true
                 }
             })
-        },500)
+            .then(()=>{
+                for(let i = 0; i != this.prisoners.length; i++){
+                    getBooks(this.prisoners[i].id)
+                    .then((data)=>{
+                        this.prisoners[i].booksCount = data.length
+                        this.getCount++
+                    })
+                }
+            })
+        },400)
+    },
+    watch:{
+        getCount: function (){
+            if(this.getCount == this.prisoners.length){
+                this.showProgress = false
+            }
+        }
     },
     components:{
         EditPrisoner,

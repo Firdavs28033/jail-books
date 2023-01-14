@@ -8,7 +8,7 @@ module.exports = defineConfig({
   pluginOptions:{
     electronBuilder:{
       builderOptions:{
-        "productName": "Jail Books",
+        "productName": "Jail Books (beta)",
         "win" : {
           "icon" : "build/256x256.png"
         },

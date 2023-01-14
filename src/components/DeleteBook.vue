@@ -55,22 +55,34 @@
             <v-btn
                 color="red"
                 small
-                dark
                 @click="deleteBook"
                 justify="center"
                 width="200"
+                :disabled="blockBtn"
+                class="delete-btn"
             >
                 Удалить
             </v-btn>
             </v-card-actions>
+
+            <v-progress-linear
+            indeterminate
+            color="#0B465A"
+            background-color="#CFD4D4"
+            height="5"
+            v-if="showProgress"
+            ></v-progress-linear>
         </v-card>
     </v-dialog>
 </template>
 
 <script>
+import deleteBook from '@/services/deleteBook'
+
 export default {
     props:{
-        book: String
+        book: String,
+        bookID: String
     },
     data() {
         return {
@@ -78,7 +90,9 @@ export default {
             errors: [],
             deleteSuccess: false,
             bookName: this.book,
-            name: ''
+            name: '',
+            blockBtn: false,
+            showProgress: false
         }
     },
     methods: {
@@ -90,15 +104,25 @@ export default {
             if(this.name!=this.bookName){
                 return this.errors.push('Введённое значение не совпадает с названием и автором удаляемой книги')
             }
+            this.blockBtn = true
+            this.showProgress = true
 
-            this.deleteSuccess =true
-            this.errors = []
+            deleteBook(this.bookID)
+            .then(()=>{
+                this.deleteSuccess =true
+                this.errors = []
+                this.showProgress = false
 
-            return setTimeout(()=>{
-                this.deleteSuccess = false
-                this.dialog = false
-                this.name = ''
-            },2000)
+                return setTimeout(()=>{
+                    this.deleteSuccess = false
+                    this.dialog = false
+                    this.name = ''
+                    this.blockBtn = false
+                    setTimeout(()=>{
+                        window.location.reload()
+                    },400)
+                },2000)
+            })
         }
     },
     watch:{
@@ -110,5 +134,7 @@ export default {
 </script>
 
 <style>
-    
+.delete-btn.theme--light.v-btn {
+    color: rgb(255 255 255 / 87%);
+}
 </style>
