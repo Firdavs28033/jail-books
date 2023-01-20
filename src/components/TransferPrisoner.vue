@@ -156,7 +156,9 @@ export default {
                     if(this.jails[i].id==this.prisoner){
                         this.currentJail = this.jails[i].name
                     } else{
-                        this.jailsList.push(this.jails[i].name)
+                        if(!this.jails[i].isDeleted){
+                            this.jailsList.push(this.jails[i].name)
+                        }
                     }
                 }
             })
