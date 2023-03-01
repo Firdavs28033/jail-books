@@ -75,7 +75,7 @@
     </v-app-bar>
 
     <v-main class="main">
-      <router-view v-if="connection"/>
+        <router-view v-if="connection"/>
 
       <div class="connection-down" v-if="!connection">
         <v-img
